@@ -7,4 +7,140 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Models will be added in Phase 2
+model User {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  pet            Pet?
+  progress       UserProgress[]
+  vocabulary     UserVocabulary[]
+  inventory      Inventory[]
+
+  @@map("users")
+}
+
+model Pet {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @unique @map("user_id")
+  name       String   @default("Neko")
+  level      Int      @default(1)
+  xp         Int      @default(0)
+  hunger     Int      @default(80)
+  happiness  Int      @default(80)
+  mood       String   @default("idle")
+  lastFed    DateTime @default(now()) @map("last_fed")
+  lastPlayed DateTime @default(now()) @map("last_played")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("pets")
+}
+
+model Vocabulary {
+  id              Int      @id @default(autoincrement())
+  japanese        String
+  reading         String
+  meaningKk       String   @map("meaning_kk")
+  meaningRu       String   @map("meaning_ru")
+  level           String   @default("N5")
+  category        String
+  exampleSentence String?  @map("example_sentence")
+
+  lessons   LessonVocabulary[]
+  users     UserVocabulary[]
+
+  @@map("vocabulary")
+}
+
+model Lesson {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  level       String   @default("N5")
+  category    String
+  orderIndex  Int      @map("order_index")
+
+  vocabulary LessonVocabulary[]
+  exercises  Exercise[]
+  progress   UserProgress[]
+
+  @@map("lessons")
+}
+
+model LessonVocabulary {
+  id           Int @id @default(autoincrement())
+  lessonId     Int @map("lesson_id")
+  vocabularyId Int @map("vocabulary_id")
+  orderIndex   Int @default(0) @map("order_index")
+
+  lesson     Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  vocabulary Vocabulary @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, vocabularyId])
+  @@map("lesson_vocabulary")
+}
+
+model Exercise {
+  id            Int    @id @default(autoincrement())
+  lessonId      Int    @map("lesson_id")
+  type          String // multiple_choice, translation, matching, word_order
+  question      Json
+  options       Json?
+  correctAnswer String @map("correct_answer")
+  xpReward      Int    @default(10) @map("xp_reward")
+  coinReward    Int    @default(5) @map("coin_reward")
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@map("exercises")
+}
+
+model UserProgress {
+  id                 Int       @id @default(autoincrement())
+  userId             Int       @map("user_id")
+  lessonId           Int       @map("lesson_id")
+  exercisesCompleted Int       @default(0) @map("exercises_completed")
+  exercisesTotal     Int       @default(0) @map("exercises_total")
+  score              Int       @default(0)
+  completed          Boolean   @default(false)
+  completedAt        DateTime? @map("completed_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@map("user_progress")
+}
+
+model UserVocabulary {
+  id           Int       @id @default(autoincrement())
+  userId       Int       @map("user_id")
+  vocabularyId Int       @map("vocabulary_id")
+  learned      Boolean   @default(false)
+  reviewCount  Int       @default(0) @map("review_count")
+  lastReviewed DateTime? @map("last_reviewed")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vocabulary Vocabulary @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, vocabularyId])
+  @@map("user_vocabulary")
+}
+
+model Inventory {
+  id       Int    @id @default(autoincrement())
+  userId   Int    @map("user_id")
+  itemType String @map("item_type")
+  itemName String @map("item_name")
+  quantity Int    @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemName])
+  @@map("inventory")
+}
