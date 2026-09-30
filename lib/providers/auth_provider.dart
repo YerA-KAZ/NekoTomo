@@ -103,13 +103,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   String _extractError(dynamic e) {
-    if (e is Exception) {
+    if (e != null) {
       try {
         final dioError = e as dynamic;
-        return dioError.response?.data?['error'] ?? 'Connection problem. Please try again.';
+        if (dioError.response?.data != null) {
+          final data = dioError.response.data;
+          if (data is Map && data.containsKey('error')) {
+            return data['error'].toString();
+          }
+        }
+        if (dioError.type != null) {
+          final typeStr = dioError.type.toString();
+          if (typeStr.contains('connectionTimeout') || 
+              typeStr.contains('connectionError') || 
+              typeStr.contains('receiveTimeout')) {
+            return 'Cannot connect to backend server. Make sure it is running.';
+          }
+        }
       } catch (_) {}
     }
-    return 'Connection problem. Please try again.';
+    return e?.toString() ?? 'Connection problem. Please try again.';
   }
 }
 
