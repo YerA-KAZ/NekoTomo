@@ -1,12 +1,21 @@
+import 'package:flutter/foundation.dart';
+
 /// API and app-wide constants
 class ApiConstants {
   ApiConstants._();
 
-  // Base URL - change this to your backend URL
-  static const String baseUrl = 'http://10.0.2.2:3000/api';
-  
-  // For iOS simulator use: http://localhost:3000/api
-  // For physical device use your machine's IP: http://192.168.x.x:3000/api
+  /// Base URL dynamically resolved for platform:
+  /// - Web / Windows Desktop / iOS: http://localhost:3000/api
+  /// - Android Emulator: http://10.0.2.2:3000/api
+  static String get baseUrl {
+    if (kIsWeb) {
+      return 'http://localhost:3000/api';
+    } else if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:3000/api';
+    } else {
+      return 'http://localhost:3000/api';
+    }
+  }
 
   // Auth endpoints
   static const String register = '/auth/register';
