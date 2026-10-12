@@ -72,3 +72,7 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# ===== Reports =====
+*.docx
+generate_report.py

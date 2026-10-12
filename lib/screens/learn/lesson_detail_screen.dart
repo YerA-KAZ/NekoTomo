@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nekotomo_app/core/constants/app_colors.dart';
+import 'package:nekotomo_app/core/localization/app_localizations.dart';
 import 'package:nekotomo_app/models/exercise.dart';
+import 'package:nekotomo_app/providers/language_provider.dart';
 import 'package:nekotomo_app/providers/lesson_provider.dart';
 import 'package:nekotomo_app/providers/pet_provider.dart';
 
@@ -43,10 +45,11 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(lessonProvider);
+    final loc = ref.watch(localizationsProvider);
 
     if (state.isLoading) {
       return Scaffold(
-        appBar: AppBar(title: Text(widget.lessonTitle)),
+        appBar: AppBar(title: Text(loc.categoryName(widget.lessonTitle))),
         body: const Center(child: CircularProgressIndicator(color: AppColors.primary)),
       );
     }
@@ -73,12 +76,21 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
 
   Widget _buildVocabStep(dynamic vocab) {
     final state = ref.watch(lessonProvider);
+    final loc = ref.watch(localizationsProvider);
+    final currentLang = ref.watch(languageProvider);
     final totalVocab = state.currentLesson?.vocabulary?.length ?? 0;
+
+    final primaryMeaning = currentLang == AppLanguage.kk
+        ? vocab.meaningKk
+        : (currentLang == AppLanguage.ru ? vocab.meaningRu : (vocab.meaningKk.isNotEmpty ? vocab.meaningKk : vocab.meaningRu));
+    final secondaryMeaning = currentLang == AppLanguage.kk
+        ? vocab.meaningRu
+        : (currentLang == AppLanguage.ru ? vocab.meaningKk : vocab.meaningRu);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(widget.lessonTitle),
+        title: Text(loc.categoryName(widget.lessonTitle)),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4),
           child: LinearProgressIndicator(
@@ -110,10 +122,10 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
               child: Column(
                 children: [
                   Text(
-                    'New Word',
+                    loc.newWord,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -143,16 +155,23 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                     child: Column(
                       children: [
                         Text(
-                          vocab.meaningKk,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
+                          primaryMeaning,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.primary,
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          vocab.meaningRu,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
+                        if (secondaryMeaning.isNotEmpty && secondaryMeaning != primaryMeaning) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            secondaryMeaning,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -184,7 +203,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                     }
                   });
                 },
-                child: const Text('Next'),
+                child: Text(loc.next),
               ),
             ),
           ],
@@ -195,12 +214,13 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
 
   Widget _buildExerciseStep(Exercise exercise) {
     final exercises = ref.watch(lessonProvider).exercises;
+    final loc = ref.watch(localizationsProvider);
     final totalExercises = exercises.length;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Exercise ${_exerciseIndex + 1} / $totalExercises'),
+        title: Text(loc.exerciseProgress(_exerciseIndex + 1, totalExercises)),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4),
           child: LinearProgressIndicator(
@@ -306,7 +326,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        _answerCorrect! ? 'Correct! +10 XP ⭐' : 'Wrong answer',
+                        _answerCorrect! ? loc.correctExerciseFeedback : loc.wrongExerciseFeedback,
                         style: TextStyle(
                           color: _answerCorrect! ? AppColors.success : AppColors.error,
                           fontWeight: FontWeight.w600,
@@ -331,7 +351,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                     ? AppColors.primary
                     : AppColors.primary,
               ),
-              child: Text(_answerCorrect != null ? 'Next' : 'Check'),
+              child: Text(_answerCorrect != null ? loc.next : loc.check),
             ),
           ],
         ),
@@ -385,6 +405,8 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
   }
 
   Widget _buildCompletionScreen() {
+    final loc = ref.watch(localizationsProvider);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -397,10 +419,12 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
               const Text('🎉', style: TextStyle(fontSize: 64)),
               const SizedBox(height: 16),
               Text(
-                'Lesson Complete!',
+                loc.lessonCompletedTitle,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   color: AppColors.primary,
+                  fontWeight: FontWeight.w800,
                 ),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
 
@@ -420,13 +444,13 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                 ),
                 child: Column(
                   children: [
-                    _resultRow('Score', '${_result?.score ?? _correctAnswers} / ${_result?.total ?? ref.read(lessonProvider).exercises.length}'),
+                    _resultRow(loc.scoreLabel, '${_result?.score ?? _correctAnswers} / ${_result?.total ?? ref.read(lessonProvider).exercises.length}'),
                     const SizedBox(height: 12),
-                    _resultRow('XP Earned', '+${_result?.xpEarned ?? _totalXpEarned} ⭐'),
+                    _resultRow(loc.xpEarnedLabel, '+${_result?.xpEarned ?? _totalXpEarned} ⭐'),
                     const SizedBox(height: 12),
-                    _resultRow('Coins', '+${_result?.coinsEarned ?? 0} 🪙'),
+                    _resultRow(loc.coinsLabel, '+${_result?.coinsEarned ?? 0} 🪙'),
                     const SizedBox(height: 12),
-                    _resultRow('Food', '+${_result?.foodEarned ?? 1} 🍙'),
+                    _resultRow(loc.foodRewardLabel, '+${_result?.foodEarned ?? 1} 🍙'),
                     if (_result?.leveledUp == true) ...[
                       const SizedBox(height: 16),
                       Container(
@@ -441,7 +465,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                             const Text('✨', style: TextStyle(fontSize: 24)),
                             const SizedBox(width: 8),
                             Text(
-                              'LEVEL UP! Level ${_result?.newLevel}',
+                              loc.levelUpNotice(_result?.newLevel ?? 1),
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 color: AppColors.warning,
                                 fontWeight: FontWeight.w800,
@@ -458,7 +482,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                '🐱 Neko is happy!',
+                loc.nekoHappyMessage,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,
@@ -470,7 +494,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Continue'),
+                  child: Text(loc.continueButton),
                 ),
               ),
             ],

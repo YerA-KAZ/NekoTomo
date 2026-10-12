@@ -44,15 +44,25 @@ class ApiConstants {
 class PetAssets {
   PetAssets._();
 
-  static const String basePath = 'assets/NekoPetPhoto';
-  static const String idle = '$basePath/IDLE.jpg';
-  static const String happy = '$basePath/HAPPY.jpg';
-  static const String sad = '$basePath/SAD.jpg';
-  static const String hungry = '$basePath/HUNGRY.jpg';
-  static const String eating = '$basePath/EATING.jpg';
-  static const String playing = '$basePath/PLAYING.jpg';
-  static const String sleeping = '$basePath/SLEEPING.jpg';
-  static const String excited = '$basePath/EXCITED.jpg';
+  static const String basePath = 'assets/NEWNekoPetPhoto';
+  static const String idle = '$basePath/IDLE.png';
+  static const String happy = '$basePath/HAPPY.png';
+  static const String sad = '$basePath/SAD.png';
+  static const String hungry = '$basePath/HUNGRY.png';
+  static const String eating = '$basePath/EATING.png';
+  static const String playing = '$basePath/PLAYING.png';
+  static const String sleeping = '$basePath/SLEEPING.png';
+  static const String excited = '$basePath/EXCITED.png';
+}
+
+/// Room asset paths
+class RoomAssets {
+  RoomAssets._();
+
+  static const String basePath = 'assets/RoomPhoto';
+  static const String home = '$basePath/Home.jpg';
+  static const String kitchen = '$basePath/Kitchen.jpg';
+  static const String gameRoom = '$basePath/GameRoom.jpg';
 }
 
 /// XP required for each level

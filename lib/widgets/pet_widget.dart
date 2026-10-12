@@ -170,15 +170,12 @@ class _PetWidgetState extends State<PetWidget>
               scale: scale,
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 500),
-                child: ClipRRect(
+                child: Image.asset(
+                  _getAssetForState(_currentDisplayState),
                   key: ValueKey(_currentDisplayState),
-                  borderRadius: BorderRadius.circular(20),
-                  child: Image.asset(
-                    _getAssetForState(_currentDisplayState),
-                    width: widget.size,
-                    height: widget.size,
-                    fit: BoxFit.cover,
-                  ),
+                  width: widget.size,
+                  height: widget.size,
+                  fit: BoxFit.contain,
                 ),
               ),
             ),

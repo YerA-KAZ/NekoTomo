@@ -86,14 +86,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Pet image
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(30),
-                      child: Image.asset(
-                        PetAssets.idle,
-                        width: 200,
-                        height: 200,
-                        fit: BoxFit.cover,
-                      ),
+                    Image.asset(
+                      PetAssets.idle,
+                      width: 220,
+                      height: 220,
+                      fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 24),
                     // App name
